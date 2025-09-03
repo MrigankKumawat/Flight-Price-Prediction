@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Price Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      width: 420px;
+      transition: 0.3s;
+    }
+    .card:hover { transform: translateY(-4px); }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #444;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    select:focus, input:focus {
+      border-color: #4facfe;
+      outline: none;
+      box-shadow: 0 0 6px rgba(79,172,254,0.4);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: linear-gradient(135deg, #3c9cff, #00e0e0); }
+    .result {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #2ecc71;
+    }
+    .error {
+      color: #e74c3c;
+      text-align: center;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>✈️ Flight Price Predictor</h2>
+    <form id="predictionForm">
+      <label for="airline">Airline</label>
+      <select id="airline" required>
+        <option value="">Select Airline</option>
+        <option>Indigo</option>
+        <option>SpiceJet</option>
+        <option>Vistara</option>
+        <option>Air_India</option>
+        <option>GO_FIRST</option>
+        <option>AirAsia</option>
+      </select>
+
+      <label for="source_city">Source City</label>
+      <select id="source_city" required>
+        <option value="">Select Source</option>
+        <option>Delhi</option>
+        <option>Mumbai</option>
+        <option>Bangalore</option>
+        <option>Chennai</option>
+        <option>Kolkata</option>
+        <option>Hyderabad</option>
+      </select>
+
+      <label for="departure_time">Departure Time</label>
+      <select id="departure_time" required>
+        <option value="">Select Time</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+        <option>Night</option>
+        <option>Early_Morning</option>
+      </select>
+
+      <label for="stops">Stops</label>
+      <select id="stops" required>
+        <option value="">Select Stops</option>
+        <option>zero</option>
+        <option>one</option>
+        <option>two_or_more</option>
+      </select>
+
+      <label for="arrival_time">Arrival Time</label>
+      <select id="arrival_time" required>
+        <option value="">Select Time</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+        <option>Night</option>
+        <option>Early_Morning</option>
+      </select>
+
+      <label for="destination_city">Destination City</label>
+      <select id="destination_city" required>
+        <option value="">Select Destination</option>
+        <option>Delhi</option>
+        <option>Mumbai</option>
+        <option>Bangalore</option>
+        <option>Chennai</option>
+        <option>Kolkata</option>
+        <option>Hyderabad</option>
+      </select>
+
+      <label for="class">Class</label>
+      <select id="class" required>
+        <option value="">Select Class</option>
+        <option>Economy</option>
+        <option>Business</option>
+      </select>
+
+      <label for="duration">Duration (hrs)</label>
+      <input type="number" id="duration" step="0.1" placeholder="e.g., 2.5" required />
+
+      <label for="days_left">Days Left</label>
+      <input type="number" id="days_left" placeholder="e.g., 15" required />
+
+      <button type="submit">Predict Price</button>
+    </form>
+    <div class="result" id="result"></div>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    document.getElementById("predictionForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      document.getElementById("result").innerText = "";
+      document.getElementById("error").innerText = "";
+
+      const data = {
+        airline: document.getElementById("airline").value,
+        source_city: document.getElementById("source_city").value,
+        departure_time: document.getElementById("departure_time").value,
+        stops: document.getElementById("stops").value,
+        arrival_time: document.getElementById("arrival_time").value,
+        destination_city: document.getElementById("destination_city").value,
+        class: document.getElementById("class").value,
+        duration: parseFloat(document.getElementById("duration").value),
+        days_left: parseInt(document.getElementById("days_left").value)
+      };
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (result["Predicted Price"]) {
+          document.getElementById("result").innerText = "Predicted Price: ₹ " + result["Predicted Price"].toFixed(2);
+        } else {
+          document.getElementById("error").innerText = "Error: " + (result.Error || "Unexpected issue");
+        }
+      } catch (err) {
+        document.getElementById("error").innerText = "Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
